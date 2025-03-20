@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+
+{% block title %}Home - NLP Processing App{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <div class="jumbotron bg-light p-5 rounded">
+            <h1 class="display-4">Welcome to the NLP Processing App</h1>
+            <p class="lead">Process documents and text using advanced natural language processing techniques.</p>
+            <hr class="my-4">
+            <p>Upload documents or enter text to start processing.</p>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="card-title mb-0">Text Processing</h5>
+            </div>
+            <div class="card-body">
+                <form id="text-form">
+                    <div class="mb-3">
+                        <label for="text-input" class="form-label">Enter your text:</label>
+                        <textarea class="form-control" id="text-input" rows="5" placeholder="Type or paste your text here..."></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Process Text</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="card-title mb-0">Document Upload</h5>
+            </div>
+            <div class="card-body">
+                <form id="document-form">
+                    <div class="mb-3">
+                        <label for="document-title" class="form-label">Document Title:</label>
+                        <input type="text" class="form-control" id="document-title" placeholder="Enter a title for your document">
+                    </div>
+                    <div class="mb-3">
+                        <label for="document-file" class="form-label">Upload Document:</label>
+                        <input class="form-control" type="file" id="document-file">
+                        <div class="form-text">Supported formats: PDF, DOCX, TXT</div>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Upload & Process</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="card-title mb-0">Results</h5>
+            </div>
+            <div class="card-body">
+                <div id="results">
+                    <p class="text-muted">Results will appear here after processing.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.getElementById('text-form').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const text = document.getElementById('text-input').value.trim();
+        
+        if (!text) {
+            alert('Please enter some text to process');
+            return;
+        }
+        
+        try {
+            const response = await fetch('/api/process', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ text })
+            });
+            
+            const data = await response.json();
+            displayResults(data);
+        } catch (error) {
+            console.error('Error processing text:', error);
+            displayError('An error occurred while processing your text.');
+        }
+    });
+    
+    function displayResults(data) {
+        const resultsDiv = document.getElementById('results');
+        resultsDiv.innerHTML = `
+            <h4>Processing Results</h4>
+            <div class="alert alert-success">
+                <p><strong>Status:</strong> ${data.processed ? 'Completed' : 'Failed'}</p>
+                <p><strong>Text Length:</strong> ${data.length} characters</p>
+                <p><strong>Summary:</strong> ${data.summary}</p>
+            </div>
+        `;
+    }
+    
+    function displayError(message) {
+        const resultsDiv = document.getElementById('results');
+        resultsDiv.innerHTML = `
+            <div class="alert alert-danger">
+                <p>${message}</p>
+            </div>
+        `;
+    }
+</script>
+{% endblock %} 
